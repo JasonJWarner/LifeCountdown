@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="description" content="生命倒计时 — 每一次亮屏，都是一次提醒">
+<title>生命倒计时</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="onboarding" class="screen centered">
+  <h1 class="animate-in">你的生命<br>还剩<span>多少</span>天</h1>
+  <p class="subtitle animate-in delay-1">每一次亮屏，都是一次提醒</p>
+  <div class="step-indicator animate-in delay-2"><div class="step-dot active" id="dot-1"></div><div class="step-dot" id="dot-2"></div></div>
+  <div id="onboard-step1" class="animate-in delay-2" style="width:100%;display:flex;flex-direction:column;gap:16px">
+    <div class="input-group"><label>出生日期</label><input type="date" id="input-birthday" /></div>
+    <div class="input-row">
+      <div class="input-group"><label>预期寿命</label><input type="number" id="input-lifespan" value="80" min="1" max="120" /></div>
+      <div class="input-group"><label>岁</label><div style="padding:14px 16px;color:var(--muted);font-size:16px;background:var(--card);border:1px solid var(--border);border-radius:10px">年</div></div>
+    </div>
+    <button class="btn-primary" id="btn-next">下一步</button>
+  </div>
+  <div id="onboard-step2" style="width:100%;display:none;flex-direction:column;gap:14px;align-items:center">
+    <div class="section-title" style="margin-top:4px">每日时间分配</div>
+    <div class="section-subtitle">点击 ✓ 开关分类，点击卡片编辑详情</div>
+    <div class="cat-grid" id="cat-grid-onboard"></div>
+    <div class="time-bar" id="onboard-bar"></div>
+    <div style="display:flex;gap:10px;width:100%">
+      <button class="btn-secondary" id="btn-prev" style="flex:1">← 上一步</button>
+      <button class="btn-primary" id="btn-start" style="flex:2">开始倒数</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN COUNTDOWN -->
+<div id="countdown" class="screen hidden">
+  <div class="countdown-header animate-in">距离生命终点</div>
+  <div class="countdown-number animate-in delay-1" id="days-number" data-suffix="天">—</div>
+  <div class="countdown-label animate-in delay-2">你的余生，以天计</div>
+  <div class="divider animate-in delay-3"></div>
+
+  <!-- 生命进度条（主视觉，一眼可见） -->
+  <div class="life-progress-wrapper animate-in delay-4">
+    <div class="life-progress-labels">
+      <span>0岁</span>
+      <span class="life-progress-center-label" id="life-current-label">—岁</span>
+      <span id="life-end-label">—岁</span>
+    </div>
+    <div class="life-progress-track" id="life-progress-track">
+      <div class="life-progress-past" id="life-progress-past"></div>
+      <div class="life-progress-now" id="life-progress-now"></div>
+    </div>
+    <div class="life-progress-ticks" id="life-progress-ticks"></div>
+    <div class="life-progress-stats">
+      <div class="lps-item"><div class="lpsv" id="lps-past">0</div><div class="lpsk">已度过（年）</div></div>
+      <div class="lps-divider"></div>
+      <div class="lps-item"><div class="lpsv accent" id="lps-remain">—</div><div class="lpsk">剩余（年）</div></div>
+      <div class="lps-divider"></div>
+      <div class="lps-item"><div class="lpsv" id="lps-total">80</div><div class="lpsk">一生（年）</div></div>
+    </div>
+  </div>
+
+  <div class="stats-row animate-in delay-5">
+    <div class="stat"><div class="stat-value" id="stat-age">—</div><div class="stat-label">周岁</div></div>
+    <div class="stat"><div class="stat-value" id="stat-weeks">—</div><div class="stat-label">剩余周</div></div>
+    <div class="stat"><div class="stat-value" id="stat-seasons">—</div><div class="stat-label">剩余季节</div></div>
+  </div>
+  <div class="time-section animate-in delay-6">
+    <div class="time-section-header">
+      <span class="time-section-title">你的一天</span>
+      <span class="time-section-title" id="bar-free-label">—</span>
+    </div>
+    <div class="time-bar" id="main-time-bar"></div>
+    <div class="time-bar-legend" id="main-time-legend"></div>
+  </div>
+  <div class="free-highlight animate-in delay-7">
+    <div class="free-number" id="free-number" data-suffix="天">—</div>
+    <div class="free-sublabel">真正属于你的自由时间</div>
+    <div class="free-detail" id="free-detail"></div>
+    <div class="free-warning" id="free-warning" style="display:none"></div>
+  </div>
+  <div class="quote animate-in delay-8">
+    <div class="quote-text" id="quote-text"></div>
+    <div class="quote-author" id="quote-author"></div>
+  </div>
+  <button class="settings-btn" id="btn-settings" title="设置">⚙</button>
+</div>
+
+<!-- SETTINGS -->
+<div id="settings" class="screen hidden">
+  <button class="btn-back" id="btn-back">← 返回</button>
+  <h2>设置</h2>
+  <div class="settings-section">
+    <div class="settings-section-title">基本信息</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="input-group"><label>出生日期</label><input type="date" id="edit-birthday" /></div>
+      <div class="input-row">
+        <div class="input-group"><label>预期寿命</label><input type="number" id="edit-lifespan" min="1" max="120" /></div>
+        <div class="input-group"><label>岁</label><div style="padding:14px 16px;color:var(--muted);font-size:16px;background:var(--card);border:1px solid var(--border);border-radius:10px">年</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-section-title">每日时间分配</div>
+    <div class="cat-grid" id="cat-grid-settings"></div>
+    <div class="time-bar" id="settings-bar" style="margin-top:12px"></div>
+    <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:6px" id="settings-free-label"></div>
+  </div>
+  <button class="btn-save" id="btn-save">保存</button>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal-box">
+    <h3 id="modal-title">编辑分类</h3>
+    <input type="hidden" id="modal-key" />
+    <div class="modal-field"><label>名称（最多4字）</label><input type="text" id="modal-label" maxlength="4" placeholder="如：健身" /></div>
+    <div class="modal-row">
+      <div class="modal-field" style="flex:2"><label>默认时长（小时）</label><input type="number" id="modal-default" step="0.5" min="0" max="24" value="1" /></div>
+      <div class="modal-field" style="flex:1"><label>颜色</label><input type="color" id="modal-color" value="#c9956b" style="height:42px;padding:4px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer" /></div>
+    </div>
+    <div class="modal-field"><label>图标</label><div class="modal-emoji-grid" id="modal-emoji-grid"></div></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modal-cancel">取消</button>
+      <button class="btn-del" id="modal-delete" style="display:none">删除</button>
+      <button class="btn-confirm" id="modal-confirm">确定</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
